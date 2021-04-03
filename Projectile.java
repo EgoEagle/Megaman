@@ -6,7 +6,8 @@ import javax.imageio.ImageIO;
 
 public class Projectile {
 	BufferedImage image;
-	int speed = 5;
+
+	int speed;
 	int damage;
 	double time = 0;
 	State direction;
@@ -17,6 +18,8 @@ public class Projectile {
 	int height;
 	int xScale;
 	int yScale;
+	boolean reflected = false;
+	String id;
 
 	public Projectile() {
 		active = true;
@@ -26,11 +29,13 @@ public class Projectile {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		speed = 15;
 		damage = 1;
 		xScale = 25;
 		yScale = 25;
 		int width = image.getWidth(null);
 		int height = image.getWidth(null);
+		id = "Shot";
 
 	}
 
@@ -43,11 +48,13 @@ public class Projectile {
 			e.printStackTrace();
 
 		}
+		speed = 20;
 		damage = 5;
 		xScale = 50;
 		yScale = 50;
 		int width = image.getWidth(null);
 		int height = image.getWidth(null);
+		id = "Chargeshot";
 	}
 
 	public void FullChargeShotFlip() {
@@ -59,11 +66,13 @@ public class Projectile {
 			e.printStackTrace();
 
 		}
+		speed = 20;
 		damage = 5;
 		xScale = 50;
 		yScale = 50;
 		int width = image.getWidth(null);
 		int height = image.getWidth(null);
+		id = "Chargeshot";
 	}
 
 	public void SemiChargeShot() {
@@ -75,11 +84,13 @@ public class Projectile {
 			e.printStackTrace();
 
 		}
+		speed = 20;
 		damage = 3;
 		xScale = 50;
 		yScale = 25;
 		int width = image.getWidth(null);
 		int height = image.getWidth(null);
+		id = "Semichargeshot";
 	}
 
 	public void SemiChargeShotFlip() {
@@ -91,11 +102,13 @@ public class Projectile {
 			e.printStackTrace();
 
 		}
+		speed = 20;
 		damage = 3;
 		xScale = 50;
 		yScale = 25;
 		int width = image.getWidth(null);
 		int height = image.getWidth(null);
+		id = "Semichargeshot";
 
 	}
 
@@ -112,7 +125,7 @@ public class Projectile {
 			e.printStackTrace();
 
 		}
-
+		speed = 15;
 		int width = image.getWidth(null);
 		int height = image.getWidth(null);
 

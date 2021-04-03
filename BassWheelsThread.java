@@ -1,98 +1,64 @@
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class BassWheelsThread implements Runnable {
+public class BassWheelsThread {
 
-	LinkedList<BassProjectile> Activebullets;
-	LinkedList<BassProjectile> Waitingbullets;
+	LinkedList<BassProjectile> Activebullets = new LinkedList<>();
 
-	@Override
-	public void run() {
+	public void update() {
 
-		Activebullets = new LinkedList<>();
-		Waitingbullets = new LinkedList<>();
-		long start;
-		long fps = 25;
-		long targetTime = 1000 / fps;
-		long elapsed;
-		long wait;
+		Iterator<BassProjectile> iterator = Activebullets.iterator();
+		while (iterator.hasNext()) {
 
-		// TODO Auto-generated method stub
-		while (true) {
+			BassProjectile projectile = iterator.next();
+			if (projectile.direction == State.RIGHT)
+				projectile.x += projectile.speed;
+			else if (projectile.direction == State.LEFT)
+				projectile.x -= projectile.speed;
+			else if (projectile.direction == State.UP)
+				projectile.y -= projectile.speed;
+			else if (projectile.direction == State.DOWN)
+				projectile.y += projectile.speed;
 
-			start = System.nanoTime();
-			// elapsed = System.nanoTime() - start;
-			// if(Activebullets.size()>0) {
-			while (Waitingbullets.size() > 0) {
-				BassProjectile projectile = Waitingbullets.removeLast();
-				Activebullets.add(projectile);
-			}
+			State direction = projectile.direction;
+			switch (direction) {
+			case LEFT:
+				if (projectile.x < 1 && projectile.y > 395)
+					projectile.direction = State.UP;
+				else if (projectile.x < 1 && projectile.y < 1)
+					projectile.direction = State.DOWN;
+				break;
 
-			Iterator<BassProjectile> iterator = Activebullets.iterator();
-			while (iterator.hasNext()) {
+			case RIGHT:
+				if (projectile.x > 920 && projectile.y < 1) {
 
-				BassProjectile projectile = iterator.next();
-				if (projectile.direction == State.RIGHT)
-					projectile.x += projectile.speed;
-				else if (projectile.direction == State.LEFT)
-					projectile.x -= projectile.speed;
-				else if (projectile.direction == State.UP)
-					projectile.y -= projectile.speed;
-				else if (projectile.direction == State.DOWN)
-					projectile.y += projectile.speed;
+					projectile.direction = State.DOWN;
+				} else if (projectile.x > 920 && projectile.y > 395)
+					projectile.direction = State.UP;
 
-				State direction = projectile.direction;
-				switch (direction) {
-				case LEFT:
-					if (projectile.x < 1 && projectile.y > 395)
-						projectile.direction = State.UP;
-					else if (projectile.x < 1 && projectile.y < 1)
-						projectile.direction = State.DOWN;
-					break;
+				break;
 
-				case RIGHT:
-					if (projectile.x > 920 && projectile.y < 1) {
+			case DOWN:
+				if (projectile.x > 920 && projectile.y > 395) {
+					projectile.direction = State.LEFT;
 
-						projectile.direction = State.DOWN;
-					} else if (projectile.x > 920 && projectile.y > 395)
-						projectile.direction = State.UP;
-
-					break;
-
-				case DOWN:
-					if (projectile.x > 920 && projectile.y > 395) {
-						projectile.direction = State.LEFT;
-
-					}
-
-					else if (projectile.x < 1 && projectile.y > 395)
-						projectile.direction = State.RIGHT;
-					break;
-				case UP:
-					if (projectile.y < 1 && projectile.x < 1)
-						projectile.direction = State.RIGHT;
-
-					else if (projectile.x > 920 && projectile.y < 1)
-						projectile.direction = State.LEFT;
-
-					break;
-				/*
-				 * if (projectile.x > 999) { // Remove the current element from the iterator and
-				 * the list. iterator.remove(); }
-				 */
 				}
+
+				else if (projectile.x < 1 && projectile.y > 395)
+					projectile.direction = State.RIGHT;
+				break;
+			case UP:
+				if (projectile.y < 1 && projectile.x < 1)
+					projectile.direction = State.RIGHT;
+
+				else if (projectile.x > 920 && projectile.y < 1)
+					projectile.direction = State.LEFT;
+
+				break;
+
 			}
-
-			try {
-				Thread.sleep(10);
-
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-
-				e.printStackTrace();
-			}
-
 		}
+
 	}
 
 }

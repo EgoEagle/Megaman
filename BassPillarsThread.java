@@ -1,60 +1,33 @@
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class BassPillarsThread implements Runnable {
+public class BassPillarsThread {
 
-	LinkedList<BassProjectile> Activebullets;
-	LinkedList<BassProjectile> Waitingbullets;
+	LinkedList<BassProjectile> Activebullets = new LinkedList<>();
+	LinkedList<BassProjectile> Waitingbullets = new LinkedList<>();
 
-	@Override
-	public void run() {
+	public void update() {
 
-		Activebullets = new LinkedList<>();
-		Waitingbullets = new LinkedList<>();
-		long start;
-		long fps = 25;
-		long targetTime = 1000 / fps;
-		long elapsed;
-		long wait;
+		if (Waitingbullets.size() > 0 && Activebullets.size() == 0) {
+			BassProjectile projectile = Waitingbullets.removeLast();
+			Activebullets.add(projectile);
+		}
 
-		// TODO Auto-generated method stub
-		while (true) {
+		Iterator<BassProjectile> iterator = Activebullets.iterator();
+		if (iterator.hasNext()) {
 
-			start = System.nanoTime();
-			// elapsed = System.nanoTime() - start;
-			// if(Activebullets.size()>0) {
-			while (Waitingbullets.size() > 0) {
-				BassProjectile projectile = Waitingbullets.removeLast();
-				Activebullets.add(projectile);
-			}
+			BassProjectile projectile = iterator.next();
+			projectile.current = projectile.pillars[projectile.pillarframe];
+			projectile.pillarframe++;
 
-			Iterator<BassProjectile> iterator = Activebullets.iterator();
-			if (iterator.hasNext()) {
-				BassProjectile projectile = iterator.next();
+			if (projectile.pillarframe > 28) {
+				projectile.pillarframe = 0;
+				iterator.remove();
 
-				projectile.pillarframe++;
-
-				projectile.current = projectile.pillars[projectile.pillarframe];
-				if (projectile.pillarframe == 0)
-					wait = 700;
-				// System.out.println(projectile.pillarframe);
-				if (projectile.pillarframe > 3) {
-
-					iterator.remove();
-				}
-
-			}
-
-			try {
-				Thread.sleep(100);
-
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-
-				e.printStackTrace();
 			}
 
 		}
+
 	}
 
 }
