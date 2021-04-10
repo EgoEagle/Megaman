@@ -15,7 +15,7 @@ public class ProjectileThread {
 			else if (projectile.direction == State.LEFT)
 				projectile.x -= projectile.speed;
 
-			if (projectile.x > 999 || projectile.x < 0) {
+			if (projectile.x > 999 || projectile.x < -50) {
 				itr.remove();
 			}
 

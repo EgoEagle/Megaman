@@ -39,19 +39,21 @@ public class NewView {
 	private final static String PRESSED = "pressed ";
 	private final static String RELEASED = "released ";
 	private final static Point RELEASED_POINT = new Point(0, 0);
+	String shootString;
+	String rightString;
+	String leftString;
+	String chargeString;
+
 	JFrame frame;
 	TitlePanel titlePanel;
 	CharSelectPanel charSelectPanel;
 	JPanel ctrlPanel;
 	GamePanel game;
-	String Car = null;
 
 	Thread gameThread;
 	Thread titleThread;
 	Thread characterSelectThread;
 	Thread characterThread;
-	Thread enemyThread;
-	Thread projectileThread;
 	Thread MusicThread;
 
 	BufferedImage title;
@@ -60,13 +62,10 @@ public class NewView {
 	boolean titleflag = true;
 	boolean charflag = true;
 	boolean musicflag = true;
-	String shootString;
-	String rightString;
-	String leftString;
-	String chargeString;
 	private Clip clip;
 	Sound music;
 	boolean LOADED = false;
+	private Graphics2D g;
 
 	public static void main(String[] args) {
 		new NewView();
@@ -211,7 +210,7 @@ public class NewView {
 					charSelectPanel.go();
 					frame.add(charSelectPanel);
 					frame.removeKeyListener(this);
-					titleflag = false;
+					// titleflag = false;
 
 				}
 
@@ -423,7 +422,7 @@ public class NewView {
 					charSelectPanel.setVisible(false);
 					game = new GamePanel();
 					gameThread = new Thread(game);
-					charflag = false;
+					// charflag = false;
 					gameThread.start();
 					frame.add(game);
 
@@ -509,16 +508,19 @@ public class NewView {
 		Bass bass;
 		ProjectileThread ProjectileThread = new ProjectileThread();
 		Background bg;
+		Background border;
 		InputMap im = getInputMap(WHEN_IN_FOCUSED_WINDOW);
 		ActionMap am = getActionMap();
 		private Map<String, Point> pressedKeys = new HashMap<String, Point>();
 		Timer timer;
 		Iterator itr;
+		boolean PAUSE = false;
+		boolean running = false;
 
 		public GamePanel() {
 			// frame.add(load);
 			// load.setVisible(true);
-
+			running = true;
 			music.stop();
 			music = new Sound("/music/SurgeOfPower.wav");
 
@@ -528,7 +530,7 @@ public class NewView {
 
 			mega = new Mega(0, 0, 30, 30);
 			bass = new Bass(800, 360, 70, 100);
-
+			border = new Background("/Background/Border1.png");
 			bg = new Background("/Background/cave.jpg");
 			this.addAction("LEFT", 0, 0);
 			this.addAction("RIGHT", 0, 0);
@@ -537,6 +539,8 @@ public class NewView {
 			this.addAction("X", 0, 0);
 			this.addAction("Q", 0, 0);
 			this.addAction("Z", 0, 0);
+			this.addAction("SPACE", 0, 0);
+			this.addAction("ESCAPE", 0, 0);
 
 			frame.setSize(600, 600);
 			frame.setBounds(100, 100, 1000, 500);
@@ -557,6 +561,7 @@ public class NewView {
 			else if (LOADED) {
 				// background
 				g2d.drawImage(bg.image, 0, 0, 1000, 500, null);
+				g2d.drawImage(border.image, -10, -5, 1000, 500, null);
 
 				// Debugger
 				g2d.drawString("Shoot: " + shootString, 100, 100);
@@ -786,6 +791,32 @@ public class NewView {
 						}
 
 					}
+					// Bass Orb
+					if (bass.BassOrbThread.Activebullets != null) {
+						Rectangle MegaHitBox = mega.getBounds();
+
+						itr = bass.BassOrbThread.Activebullets.iterator();
+						while (itr.hasNext()) {
+							BassProjectile projectile = (BassProjectile) itr.next();
+							Rectangle ShotHitBox = projectile.getBounds();
+
+							g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
+									projectile.yScale, null);
+
+							if (ShotHitBox.intersects(MegaHitBox) && mega.invincible == false) {
+								mega.health -= projectile.damage;
+								mega.invincible = true;
+								mega.Invincible_Frame_Start_Time = System.nanoTime();
+
+							}
+							if (!bass.isLive) {
+								itr.remove();
+							}
+
+						}
+
+					}
+
 					//
 					//
 					// Explosion Animation
@@ -926,6 +957,21 @@ public class NewView {
 
 				case "Q":
 					break;
+
+				case "SPACE":
+					if (mega.state == State.STANDING) {
+						mega.state = State.SLIDE;
+					}
+					break;
+
+				case "ESCAPE":
+					if (PAUSE)
+						PAUSE = false;
+					else
+						PAUSE = true;
+
+					break;
+
 				}
 
 			}
@@ -957,20 +1003,24 @@ public class NewView {
 				pressedKeys.put(keyStroke, moveDelta);
 
 			// Start the Timer when the first key is pressed
+			if (!PAUSE) {
+				if ((pressedKeys.size() >= 1) && mega.air == false) {
 
-			if ((pressedKeys.size() >= 1) && mega.air == false) {
-				if (mega.state != State.SPAWNING) {
-					mega.state = State.JUMPING;
-					mega.originalheight = mega.y;
-					mega.airtime = System.nanoTime();
-					mega.air = true;
-					mega.JumpRelease = false;
-					// timer.start();
+					if (mega.state != State.SPAWNING) {
+						if (mega.WallHop == false) {
+							mega.state = State.JUMPING;
+							mega.originalheight = mega.y;
+							mega.airtime = System.nanoTime();
+							mega.air = true;
+							mega.JumpRelease = false;
+						}
+						// timer.start();
+					}
 				}
+
+				// Stop the Timer when all keys have been released
+
 			}
-
-			// Stop the Timer when all keys have been released
-
 		}
 
 		private void ReleasehandleKeyEvent(String keyStroke, Point moveDelta) {
@@ -979,12 +1029,15 @@ public class NewView {
 			switch (keyStroke) {
 			case "LEFT":
 				mega.leftwalk = false;
+				mega.walkframe = 0;
 				if (mega.state == State.STANDING) {
 					mega.current = mega.idleBack;
 				}
 				break;
 			case "RIGHT":
 				mega.rightwalk = false;
+				mega.walkframe = 0;
+
 				if (mega.state == State.STANDING) {
 					mega.current = mega.idle;
 				}
@@ -1054,11 +1107,15 @@ public class NewView {
 
 			case "Z":
 				mega.JumpRelease = true;
+				mega.WallHop = false;
 				break;
 			case "Q":
-				mega.deltaX = 400;
-				mega.deltaY = 410;
+				mega.deltaX = 50;
+				mega.deltaY = 200;
 				mega.health--;
+				break;
+
+			case "SPACE":
 				break;
 
 			}
@@ -1095,8 +1152,28 @@ public class NewView {
 			long elapsed;
 			long wait;
 
-			while (true) {
+			while (running) {
 
+				if (!mega.isLive) {
+
+					running = false;
+					game.setVisible(false);
+					music.stop();
+
+					titlePanel = new TitlePanel();
+					titleThread = new Thread(titlePanel);
+					titleThread.start();
+					titleflag = true;
+					frame.setBounds(150, 150, 530, 366);
+					frame.setLocationRelativeTo(null);
+					frame.setResizable(false);
+					frame.add(titlePanel);
+					titlePanel.setVisible(true);
+					frame.setVisible(true);
+				}
+
+				if (mega.health < 0)
+					mega.isLive = false;
 				start = System.nanoTime();
 				elapsed = System.nanoTime() - start;
 				wait = targetTime - elapsed / 1000000;
@@ -1117,51 +1194,54 @@ public class NewView {
 				}
 
 				if (LOADED) {
+					if (!PAUSE) {
+						if (mega.air == false)
+							mega.setLocation(mega.deltaX, mega.deltaY);
 
-					if (mega.air == false)
-						mega.setLocation(mega.deltaX, mega.deltaY);
+						if (mega.state != State.SPAWNING) {
+							mega.setLocation(mega.deltaX, mega.deltaY);
+						}
 
-					if (mega.state != State.SPAWNING) {
-						mega.setLocation(mega.deltaX, mega.deltaY);
-					}
+						if (mega.shoot)
+							shootString = "true";
+						else
+							shootString = "false";
 
-					if (mega.shoot)
-						shootString = "true";
-					else
-						shootString = "false";
+						if (mega.leftwalk)
+							leftString = "true";
+						else
+							leftString = "false";
 
-					if (mega.leftwalk)
-						leftString = "true";
-					else
-						leftString = "false";
+						if (mega.rightwalk)
+							rightString = "true";
+						else
+							rightString = "false";
 
-					if (mega.rightwalk)
-						rightString = "true";
-					else
-						rightString = "false";
+						if (mega.CHARGEABLE)
+							chargeString = "true";
+						else
+							chargeString = "false";
 
-					if (mega.CHARGEABLE)
-						chargeString = "true";
-					else
-						chargeString = "false";
-
-					// Update Player
-					ProjectileThread.update();
-					if (mega.isLive) {
+						// Update Player
+						ProjectileThread.update();
+						// if (mega.isLive) {
 						mega.update();
 
 						if (mega.minChargeReached && !mega.playedOnce) {
 							playSound(mega.playSound());
 							mega.playedOnce = true;
 						}
+						// }
+
+						// Update Enemy
+						if (!bass.LockedOn) {
+							bass.trackPlayer(mega);
+						}
+						bass.update();
+
+						this.repaint();
+
 					}
-
-					// Update Enemy
-
-					bass.update();
-
-					this.repaint();
-
 				}
 			}
 

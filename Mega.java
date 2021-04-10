@@ -25,6 +25,15 @@ public class Mega extends PlayerCharacter {
 	BufferedImage[] JumpBackShoot;
 	BufferedImage[] FallBackShoot;
 	BufferedImage[] ChargeAnimation;
+	BufferedImage[] MegaSlideLeft;
+	BufferedImage[] MegaSlideShootLeft;
+	BufferedImage[] MegaSlideRight;
+	BufferedImage[] MegaSlideShootRight;
+	BufferedImage WallClimbLeft;
+	BufferedImage WallShootLeft;
+	BufferedImage WallClimbRight;
+	BufferedImage WallShootRight;
+	boolean WallHop = false;
 	boolean actionLock = false;
 	boolean invincible = false;
 	boolean leftwalk = false;
@@ -46,6 +55,7 @@ public class Mega extends PlayerCharacter {
 	double chargeTimer = 0;
 	long ChargeStartTime = 0;
 	long Invincible_Frame_Start_Time = 0;
+	int slideframe = 0;
 	int walkframe = 0;
 	int jumpframe = 0;
 	int fallframe = 0;
@@ -71,13 +81,17 @@ public class Mega extends PlayerCharacter {
 		JumpDes = new BufferedImage[12];
 		MegaShoot = new BufferedImage[4];
 		MegaBackShoot = new BufferedImage[4];
-		MegaRun = new BufferedImage[12];
-		MegaBackRun = new BufferedImage[12];
+		MegaRun = new BufferedImage[25];
+		MegaBackRun = new BufferedImage[25];
 		JumpShoot = new BufferedImage[9];
 		FallShoot = new BufferedImage[12];
 		JumpBackShoot = new BufferedImage[9];
 		FallBackShoot = new BufferedImage[12];
 		ChargeAnimation = new BufferedImage[14];
+		MegaSlideLeft = new BufferedImage[12];
+		MegaSlideShootLeft = new BufferedImage[2];
+		MegaSlideRight = new BufferedImage[12];
+		MegaSlideShootRight = new BufferedImage[2];
 		// Activebullets = new LinkedList<>();
 
 		// TODO Auto-generated constructor stub
@@ -106,6 +120,20 @@ public class Mega extends PlayerCharacter {
 			MegaRun[9] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun4.png"));
 			MegaRun[10] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun5.png"));
 			MegaRun[11] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun5.png"));
+			MegaRun[12] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun6.png"));
+			MegaRun[13] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun6.png"));
+			MegaRun[14] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun7.png"));
+			MegaRun[15] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun7.png"));
+			MegaRun[16] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun8.png"));
+			MegaRun[17] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun8.png"));
+			MegaRun[18] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun9.png"));
+			MegaRun[18] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun9.png"));
+			MegaRun[19] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun10.png"));
+			MegaRun[20] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun10.png"));
+			MegaRun[21] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun11.png"));
+			MegaRun[22] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun11.png"));
+			MegaRun[23] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun12.png"));
+			MegaRun[24] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaRun12.png"));
 ///
 			//
 			//
@@ -121,6 +149,20 @@ public class Mega extends PlayerCharacter {
 			MegaBackRun[9] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun4.png"));
 			MegaBackRun[10] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun5.png"));
 			MegaBackRun[11] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun5.png"));
+			MegaBackRun[12] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun6.png"));
+			MegaBackRun[13] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun6.png"));
+			MegaBackRun[14] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun7.png"));
+			MegaBackRun[15] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun7.png"));
+			MegaBackRun[16] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun8.png"));
+			MegaBackRun[17] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun8.png"));
+			MegaBackRun[18] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun9.png"));
+			MegaBackRun[18] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun9.png"));
+			MegaBackRun[19] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun10.png"));
+			MegaBackRun[20] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun10.png"));
+			MegaBackRun[21] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun11.png"));
+			MegaBackRun[22] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun11.png"));
+			MegaBackRun[23] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun12.png"));
+			MegaBackRun[24] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBackRun12.png"));
 
 			MegaShoot[0] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaShoot.png"));
 			MegaShoot[1] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaShoot1.png"));
@@ -241,6 +283,41 @@ public class Mega extends PlayerCharacter {
 
 			idle = ImageIO.read(NewView.class.getResource("/MegamanSprite/Mega.png"));
 			idleBack = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaBack.png"));
+			WallClimbLeft = ImageIO.read(NewView.class.getResource("/MegamanSprite/WallClimbLeft.png"));
+			WallShootLeft = ImageIO.read(NewView.class.getResource("/MegamanSprite/WallShootLeft.png"));
+			WallClimbRight = ImageIO.read(NewView.class.getResource("/MegamanSprite/WallClimbRight.png"));
+			WallShootRight = ImageIO.read(NewView.class.getResource("/MegamanSprite/WallShootRight.png"));
+			MegaSlideLeft[0] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft0.png"));
+			MegaSlideLeft[1] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft0.png"));
+			MegaSlideLeft[2] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft0.png"));
+			MegaSlideLeft[3] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[4] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[5] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[6] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[7] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[8] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[9] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[10] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+			MegaSlideLeft[11] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideLeft1.png"));
+
+			MegaSlideRight[0] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight0.png"));
+			MegaSlideRight[1] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight0.png"));
+			MegaSlideRight[2] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight0.png"));
+			MegaSlideRight[3] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[4] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[5] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[6] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[7] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[8] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[9] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[10] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+			MegaSlideRight[11] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideRight1.png"));
+
+			MegaSlideShootLeft[0] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideShootLeft0.png"));
+			MegaSlideShootLeft[1] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideShootLeft1.png"));
+
+			MegaSlideShootRight[0] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideShootRight0.png"));
+			MegaSlideShootRight[1] = ImageIO.read(NewView.class.getResource("/MegamanSprite/MegaSlideShootRight1.png"));
 			current = idle;
 
 		} catch (IOException e) {
@@ -261,8 +338,8 @@ public class Mega extends PlayerCharacter {
 			if (rightwalk) {
 
 				current = FallShoot[fallframe];
-				if (deltaX + 9 > 940) {
-					deltaX += 0;
+				if (deltaX + 9 > 935) {
+					deltaX = 935;
 				} else {
 					deltaX += 9;
 				}
@@ -271,8 +348,8 @@ public class Mega extends PlayerCharacter {
 			else if (leftwalk) {
 
 				current = FallBackShoot[fallframe];
-				if (deltaX - 9 < 1) {
-					deltaX -= 0;
+				if (deltaX - 9 < -5) {
+					deltaX = 0;
 				} else {
 					deltaX -= 9;
 				}
@@ -289,8 +366,10 @@ public class Mega extends PlayerCharacter {
 
 		else if (rightwalk) {
 			current = JumpDes[fallframe];
-			if (deltaX + 9 > 940) {
-				deltaX += 0;
+			if (deltaX + 9 > 935) {
+				deltaX = 935;
+				state = State.WALL_CLIMB_RIGHT;
+				air = false;
 			} else {
 				deltaX += 9;
 			}
@@ -298,8 +377,10 @@ public class Mega extends PlayerCharacter {
 
 		else if (leftwalk) {
 			current = JumpBackDes[fallframe];
-			if (deltaX - 9 < 1) {
-				deltaX -= 0;
+			if (deltaX - 9 < -5) {
+				deltaX = 0;
+				state = State.WALL_CLIMB_LEFT;
+				air = false;
 			} else {
 				deltaX -= 9;
 			}
@@ -314,11 +395,17 @@ public class Mega extends PlayerCharacter {
 		fallframe++;
 		deltaY += delta;
 		shoot = false;
-		if (fallframe > 11 || y >= 410) {
+		if (y < 300 && fallframe > 1) {
+
+			fallframe--;
+
+		}
+
+		else if (y >= 410 || fallframe > 11) {
 
 			y = 410;
 			fallframe = 0;
-			deltaY = originalheight;
+			deltaY = 410;
 			state = State.STANDING;
 			air = false;
 			action = State.STILL;
@@ -345,8 +432,8 @@ public class Mega extends PlayerCharacter {
 
 			current = MegaRun[walkframe];
 			walkframe++;
-			if (deltaX + 8 > 940) {
-				deltaX += 0;
+			if (deltaX + 8 > 935) {
+				deltaX = 935;
 			} else {
 				deltaX += 8;
 			}
@@ -357,15 +444,15 @@ public class Mega extends PlayerCharacter {
 
 			current = MegaBackRun[walkframe];
 			walkframe++;
-			if (deltaX - 8 < 1) {
-				deltaX -= 0;
+			if (deltaX - 8 < -5) {
+				deltaX = 0;
 			} else {
 				deltaX -= 8;
 			}
 
 		}
 
-		if (walkframe > 11) {
+		if (walkframe > 24) {
 			walkframe = 0;
 		}
 
@@ -395,8 +482,9 @@ public class Mega extends PlayerCharacter {
 
 		else if (rightwalk) {
 			current = JumpAsc[jumpframe];
-			if (deltaX + 12 > 940) {
-				deltaX += 0;
+			if (deltaX + 12 > 935) {
+				deltaX = 935;
+				state = State.WALL_CLIMB_RIGHT;
 			} else {
 				deltaX += 12;
 			}
@@ -404,8 +492,9 @@ public class Mega extends PlayerCharacter {
 
 		else if (leftwalk) {
 			current = JumpBackAsc[jumpframe];
-			if (deltaX - 12 < 1) {
-				deltaX -= 0;
+			if (deltaX - 12 < -5) {
+				deltaX = 0;
+				state = State.WALL_CLIMB_LEFT;
 			} else {
 				deltaX -= 12;
 			}
@@ -425,7 +514,12 @@ public class Mega extends PlayerCharacter {
 		}
 
 		jumpframe++;
-		deltaY -= delta;
+
+		if (deltaY - delta > 0)
+			deltaY -= delta;
+		else
+			deltaY = 0;
+
 		if (jumpframe > 8 || JumpRelease) {
 			jumpframe = 0;
 			state = State.FALLING;
@@ -453,7 +547,7 @@ public class Mega extends PlayerCharacter {
 	}
 
 	public void update() {
-
+		// System.out.println(state);
 		if (invincible) {
 
 			long invincibleTimer = ((System.nanoTime() - Invincible_Frame_Start_Time) / 1000000000);
@@ -506,9 +600,111 @@ public class Mega extends PlayerCharacter {
 			JumpingSequence();
 			break;
 
+		case WALL_CLIMB_LEFT:
+			WallClimbLeft();
+			break;
+
+		case WALL_CLIMB_RIGHT:
+			WallClimbRight();
+			break;
+
+		case SLIDE:
+			SlideSequence();
+			break;
 		default:
 			break;
 		}
+
+	}
+
+	private void SlideSequence() {
+		// TODO Auto-generated method stub
+		if (direction == state.LEFT) {
+			current = MegaSlideLeft[slideframe];
+			if (deltaX - 12 < -5)
+				deltaX = -5;
+			else
+				deltaX -= 12;
+		} else if (direction == state.RIGHT) {
+			current = MegaSlideRight[slideframe];
+			if (deltaX + 12 > 935)
+				deltaX = 935;
+			else
+				deltaX += 12;
+		}
+		slideframe++;
+
+		if (slideframe > 11) {
+			slideframe = 0;
+			state = State.STANDING;
+			action = State.STILL;
+		}
+
+	}
+
+	private void WallClimbLeft() {
+		// TODO Auto-generated method stub
+		fallframe = 0;
+		jumpframe = 0;
+		current = WallClimbLeft;
+		direction = state.RIGHT;
+
+		if (air && rightwalk && WallHop == false) {
+			WallHop = true;
+			state = State.JUMPING;
+		} else if (air && WallHop == false) {
+			WallHop = true;
+			if (deltaY - 38 > 0)
+				deltaY -= 38;
+			else
+				deltaY = 0;
+		}
+
+		air = false;
+
+		if (shoot) {
+			current = WallShootLeft;
+			shoot = false;
+		}
+
+		if (deltaY >= 410) {
+			deltaY = 410;
+			state = State.STANDING;
+		} else
+			deltaY += 5;
+
+	}
+
+	private void WallClimbRight() {
+		// TODO Auto-generated method stub
+		fallframe = 0;
+		jumpframe = 0;
+		current = WallClimbRight;
+		direction = state.LEFT;
+		if (air && leftwalk && WallHop == false) {
+			WallHop = true;
+			state = State.JUMPING;
+		} else if (air && WallHop == false) {
+			WallHop = true;
+			if (deltaY - 38 > 0)
+				deltaY -= 38;
+			else
+				deltaY = 0;
+		}
+
+		air = false;
+
+		if (shoot) {
+			current = WallShootRight;
+
+			shoot = false;
+		}
+
+		if (deltaY >= 410) {
+			deltaY = 410;
+			state = State.STANDING;
+		} else
+			deltaY += 5;
 
 	}
 

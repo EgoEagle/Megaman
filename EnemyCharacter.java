@@ -12,6 +12,9 @@ public class EnemyCharacter {
 	int health;
 	double airtime = 0;
 	boolean isLive = true;
+	float PLAYER_LOCATION_X;
+	float PLAYER_LOCATION_Y;
+	float Destination;
 
 	public EnemyCharacter(int x, int y, int width, int height) {
 		this.x = x;
@@ -68,5 +71,17 @@ public class EnemyCharacter {
 	public void update() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public void trackPlayer(PlayerCharacter player) {
+		PLAYER_LOCATION_X = player.x;
+		PLAYER_LOCATION_Y = player.y;
+	}
+
+	public float CalculateDistance() {
+		float distance = (float) Math
+				.sqrt(Math.pow((this.x - PLAYER_LOCATION_X), 2) + Math.pow((this.y - PLAYER_LOCATION_Y), 2));
+
+		return distance;
 	}
 }

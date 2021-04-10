@@ -14,7 +14,7 @@ public class Bass extends EnemyCharacter {
 	BufferedImage idle;
 	BufferedImage idleBack;
 	BufferedImage defeated;
-
+	BufferedImage[] SmashAnimation;
 	BufferedImage[] ThrowAnimation;
 	BufferedImage[] ThrowBackAnimation;
 	BufferedImage[] PillarSummonAnimation;
@@ -29,14 +29,16 @@ public class Bass extends EnemyCharacter {
 	boolean air = false;
 	boolean charge = false;
 	boolean barrierActive = true;
-	int TeleportCount = 0;
-	int WheelCount = 0;
+
 	State state;
 	State direction;
 	State action;
 	int barrierhealth = 100;
+	int TeleportCount = 0;
+	int WheelCount = 0;
 	int walkframe = 0;
-	int pillarsummonframe = 0;
+	int smashanimation = -1;
+	int pillarsummonframe = -1;
 	int throwframe = 0;
 	int wheelframe = 0;
 	int barrierframe = 0;
@@ -45,6 +47,7 @@ public class Bass extends EnemyCharacter {
 	int defeatCounter = 0;
 	long start;
 	boolean In_Animation_Flag = false;
+	boolean LockedOn = false;
 
 	LinkedList<BassProjectile> Activebullets;
 
@@ -53,8 +56,8 @@ public class Bass extends EnemyCharacter {
 	BassProjectile ExplosiveList[];
 	BassProjectile ExplodeProjectile;
 
-	// BassWheelsThread BassWheelsThread;
 	BassPillarsThread BassPillarsThread;
+	BassOrbThread BassOrbThread;
 	Explode ExplodeThread;
 
 	float originalheight;
@@ -62,7 +65,9 @@ public class Bass extends EnemyCharacter {
 	long elapsed;
 
 	public Bass(int x, int y, int width, int height) {
+
 		super(x, y, width, height);
+
 		health = 80;
 		Activebullets = new LinkedList<>();
 		PillarProjectileList = new BassProjectile[5];
@@ -83,7 +88,7 @@ public class Bass extends EnemyCharacter {
 		}
 
 		BassPillarsThread = new BassPillarsThread();
-		// BassWheelsThread = new BassWheelsThread();
+		BassOrbThread = new BassOrbThread();
 		ExplodeThread = new Explode();
 		start = System.currentTimeMillis();
 		state = State.STANDING;
@@ -99,6 +104,7 @@ public class Bass extends EnemyCharacter {
 		TP_LEFT_Animation = new BufferedImage[9];
 		TP_RIGHT_Animation = new BufferedImage[9];
 		PillarSummonAnimation = new BufferedImage[22];
+		SmashAnimation = new BufferedImage[25];
 
 		// TODO Auto-generated constructor stub
 		try {
@@ -220,6 +226,32 @@ public class Bass extends EnemyCharacter {
 			TP_RIGHT_Animation[7] = ImageIO.read(NewView.class.getResource("/BassSprite/BassTPBack3.png"));
 			TP_RIGHT_Animation[8] = ImageIO.read(NewView.class.getResource("/BassSprite/BassTPBack3.png"));
 
+			SmashAnimation[0] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[1] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[5] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[6] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[7] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[8] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[9] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[10] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[11] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[12] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[13] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[14] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[15] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[16] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
+			SmashAnimation[17] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
+			SmashAnimation[18] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
+			SmashAnimation[19] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
+			SmashAnimation[20] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
+			SmashAnimation[21] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
+			SmashAnimation[22] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
+			SmashAnimation[23] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
+			SmashAnimation[24] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
+
 		} catch (IOException e) {
 			e.printStackTrace();
 
@@ -228,30 +260,18 @@ public class Bass extends EnemyCharacter {
 	}
 
 	public void spawnAnimation() {
-		if (this.direction == State.FACING_LEFT) {
 
+		if (this.direction == State.FACING_LEFT)
 			current = Spawn[walkframe];
 
-			walkframe++;
-
-			if (walkframe == 17) {
-				walkframe = 0;
-
-			}
-		}
-
-		else if (this.direction == State.FACING_RIGHT) {
-
+		else if (this.direction == State.FACING_RIGHT)
 			current = SpawnLeft[walkframe];
 
+		if (walkframe == 17) {
+			walkframe = 0;
+
+		} else
 			walkframe++;
-
-			if (walkframe == 17) {
-				walkframe = 0;
-
-			}
-
-		}
 	}
 
 	@Override
@@ -276,14 +296,16 @@ public class Bass extends EnemyCharacter {
 					barrierframe = 0;
 
 			}
-
+			//
+			//
+			//
+			/// Action Randomizer
 			if ((elapsed - start) > 3000 && !In_Animation_Flag) {
 				Random rand = new Random();
-				int int_random = rand.nextInt(3 + 1);
-				if (int_random == 0 && TeleportCount < 2) {
+				int int_random = rand.nextInt(4 + 1);
+				if (int_random == 0 && TeleportCount != 2) {
 					In_Animation_Flag = true;
 					TeleportCount++;
-					WheelCount = 0;
 					if (this.direction == State.FACING_RIGHT)
 						this.state = State.TP_TO_RIGHT_SIDE;
 
@@ -293,7 +315,7 @@ public class Bass extends EnemyCharacter {
 
 				}
 
-				else if (int_random == 1 && y != 275 && WheelCount < 2) {
+				else if (int_random == 1 && y != 275 && WheelCount != 2) {
 					In_Animation_Flag = true;
 					WheelCount++;
 					TeleportCount = 0;
@@ -310,6 +332,16 @@ public class Bass extends EnemyCharacter {
 					y = 275;
 					this.direction = State.FACING_LEFT;
 					this.state = State.PILLAR;
+				}
+
+				else if (int_random == 3 && WheelCount == 2) {
+					WheelCount = 0;
+					In_Animation_Flag = true;
+					// TeleportCount = 0;
+					x = 100;
+					y = 275;
+					this.direction = State.FACING_RIGHT;
+					this.state = State.SMASH;
 				}
 
 			}
@@ -353,14 +385,17 @@ public class Bass extends EnemyCharacter {
 
 				break;
 
-			case ORBS:
+			case SMASH:
+				Smash();
 				break;
 
 			default:
 				break;
 			}
-			BassPillarsThread.update();
-			// BassWheelsThread.update();
+			if (BassPillarsThread.Waitingbullets.size() > 0 || BassPillarsThread.Activebullets.size() > 0)
+				BassPillarsThread.update();
+			if (BassOrbThread.Activebullets.size() > 0)
+				BassOrbThread.update();
 
 		}
 
@@ -369,6 +404,40 @@ public class Bass extends EnemyCharacter {
 			if (ExplodeThread.Activebullets.size() == 0)
 				current = null;
 		}
+	}
+
+	private void Smash() {
+		// TODO Auto-generated method stub
+		smashanimation++;
+		current = SmashAnimation[smashanimation];
+
+		if (smashanimation == 5) {
+			if (!LockedOn) {
+				LockedOn = true;
+			}
+
+		}
+
+		else if (smashanimation == 15) {
+
+			this.x = this.PLAYER_LOCATION_X - 30;
+			this.y = this.PLAYER_LOCATION_Y - 35;
+		}
+
+		else if (smashanimation == 24) {
+			BassProjectile projectile = new BassProjectile();
+			projectile.OrbAttack();
+			projectile.x = x;
+			projectile.y = y;
+			BassOrbThread.Activebullets.add(projectile);
+			// In_Animation_Flag = false;
+			this.state = State.TP_TO_RIGHT_SIDE;
+			smashanimation = 0;
+			start = elapsed;
+			LockedOn = false;
+
+		}
+
 	}
 
 	private void defeatedAnimation() {
@@ -500,11 +569,10 @@ public class Bass extends EnemyCharacter {
 
 	private void pillarAnimation() {
 		// TODO Auto-generated method stub
-
-		current = PillarSummonAnimation[pillarsummonframe];
 		pillarsummonframe++;
+		current = PillarSummonAnimation[pillarsummonframe];
 
-		if (pillarsummonframe > 21) {
+		if (pillarsummonframe == 21) {
 			for (int i = 0; i < 5; i++) {
 				Random rand = new Random();
 				int int_random = rand.nextInt(200 + 500);

@@ -18,17 +18,40 @@ public class BassProjectile {
 	float y;
 	int pillarframe = 0;
 	int explosionframe = 0;
+	int orbframe = 0;
 	int width;
 	int height;
 	int xScale;
 	int yScale;
 	String id;
 	BufferedImage[] ExplodeAnimation = new BufferedImage[8];
+	BufferedImage[] Orb = new BufferedImage[8];
 
 	public BassProjectile() {
 		active = true;
 		wheels = new BufferedImage[5];
 		pillars = new BufferedImage[30];
+	}
+
+	public void OrbAttack() {
+		try {
+			Orb[0] = ImageIO.read(NewView.class.getResource("/Effects/Orb0.png"));
+			Orb[1] = ImageIO.read(NewView.class.getResource("/Effects/Orb1.png"));
+			Orb[2] = ImageIO.read(NewView.class.getResource("/Effects/Orb2.png"));
+			Orb[3] = ImageIO.read(NewView.class.getResource("/Effects/Orb3.png"));
+			Orb[4] = ImageIO.read(NewView.class.getResource("/Effects/Orb4.png"));
+			Orb[5] = ImageIO.read(NewView.class.getResource("/Effects/Orb5.png"));
+			Orb[6] = ImageIO.read(NewView.class.getResource("/Effects/Orb6.png"));
+			Orb[7] = ImageIO.read(NewView.class.getResource("/Effects/Orb6.png"));
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		id = "Orb";
+		damage = 5;
+		xScale = 300;
+		yScale = 300;
 	}
 
 	public void Explosion() {
