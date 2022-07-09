@@ -26,6 +26,7 @@ public class BassProjectile {
 	String id;
 	BufferedImage[] ExplodeAnimation = new BufferedImage[8];
 	BufferedImage[] Orb = new BufferedImage[8];
+	float StartTime;
 
 	public BassProjectile() {
 		active = true;
@@ -50,8 +51,8 @@ public class BassProjectile {
 		}
 		id = "Orb";
 		damage = 5;
-		xScale = 300;
-		yScale = 300;
+		xScale = 350;
+		yScale = 350;
 	}
 
 	public void Explosion() {

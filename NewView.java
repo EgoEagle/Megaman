@@ -5,7 +5,6 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -13,6 +12,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,6 +66,10 @@ public class NewView {
 	Sound music;
 	boolean LOADED = false;
 	private Graphics2D g;
+
+	boolean ElecMan = false;
+	boolean Bass = false;
+	String BossKey = "";
 
 	public static void main(String[] args) {
 		new NewView();
@@ -276,6 +280,7 @@ public class NewView {
 		BufferedImage Selector_Frame;
 		BufferedImage Boss_Selection_Frame;
 		BufferedImage Bass_Icon;
+		BufferedImage Elecman_Icon;
 		boolean CHARACTER_SELECTED = false;
 		int SelectorXpos = 50;
 		int SelectorYpos = 0;
@@ -293,6 +298,7 @@ public class NewView {
 				Selector_Frame = ImageIO.read(NewView.class.getResource("/Effects/Selector_Frame.png"));
 				Boss_Selection_Frame = ImageIO.read(NewView.class.getResource("/Effects/Boss_Selection_Frame.png"));
 				Bass_Icon = ImageIO.read(NewView.class.getResource("/Effects/Bass.png"));
+				Elecman_Icon = ImageIO.read(NewView.class.getResource("/Effects/Elecman.png"));
 				currentSelector = SelectorLeft;
 
 			} catch (IOException e) {
@@ -332,7 +338,8 @@ public class NewView {
 				// g2d.drawImage(Selector_Frame, 259, 240, 100, 95, null);
 				// g2d.drawImage(Selector_Frame, 259, 137, 100, 95, null);
 
-				g2d.drawImage(Bass_Icon, 250, 26, 118, 108, null);
+				g2d.drawImage(Elecman_Icon, 250, 26, 118, 108, null);
+				g2d.drawImage(Bass_Icon, 589, 335, 118, 113, null);
 				g2d.drawImage(Boss_Selection_Frame, 230, 0, 500, 470, null);
 
 				switch (Selector_Index) {
@@ -417,14 +424,66 @@ public class NewView {
 				}
 
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-					playSound("/music/select.wav");
-					frame.removeKeyListener(this);
-					charSelectPanel.setVisible(false);
-					game = new GamePanel();
-					gameThread = new Thread(game);
-					// charflag = false;
-					gameThread.start();
-					frame.add(game);
+					switch (Selector_Index) {
+					case 11:
+						ElecMan = true;
+						playSound("/music/select.wav");
+						frame.removeKeyListener(this);
+						charSelectPanel.setVisible(false);
+						game = new GamePanel();
+						gameThread = new Thread(game);
+						// charflag = false;
+						gameThread.start();
+						frame.add(game);
+						break;
+
+					case 21:
+
+						break;
+
+					case 31:
+
+						break;
+
+					case 41:
+
+						break;
+
+					case 12:
+
+						break;
+					case 42:
+
+						break;
+					case 13:
+
+						break;
+					case 43:
+
+						break;
+
+					case 14:
+
+						break;
+					case 24:
+
+						break;
+					case 34:
+
+						break;
+					case 44:
+						Bass = true;
+						playSound("/music/select.wav");
+						frame.removeKeyListener(this);
+						charSelectPanel.setVisible(false);
+						game = new GamePanel();
+						gameThread = new Thread(game);
+						// charflag = false;
+						gameThread.start();
+						frame.add(game);
+						break;
+
+					}
 
 				}
 
@@ -505,19 +564,47 @@ public class NewView {
 
 		Color yellow = new Color(225, 225, 0);
 		Mega mega;
-		Bass bass;
-		ProjectileThread ProjectileThread = new ProjectileThread();
+		EnemyCharacter ec;
+		ArrayList al = new ArrayList();
 		Background bg;
 		Background border;
 		InputMap im = getInputMap(WHEN_IN_FOCUSED_WINDOW);
 		ActionMap am = getActionMap();
 		private Map<String, Point> pressedKeys = new HashMap<String, Point>();
+		public HashMap<String, EnemyCharacter> BossMap = new HashMap<String, EnemyCharacter>();
+		int StageWidth;
+		int StageHeight;
+
 		Timer timer;
 		Iterator itr;
 		boolean PAUSE = false;
 		boolean running = false;
 
 		public GamePanel() {
+			// al.add(bass);
+			// al.add(elecman);
+			/*
+			 * if (BossMap.containsKey(BossKey)) BossMap.get(BossKey) = new
+			 * BossMap.get(BossKey);
+			 */
+
+			if (Bass) {
+				BossKey = "Bass";
+				ec = new Bass(800, 360, 70, 100);
+				BossMap.put("Bass", ec);
+				bg = new Background("/Background/cave.jpg");
+				StageWidth = 1000;
+				StageHeight = 500;
+
+			}
+			if (ElecMan) {
+				BossKey = "Elecman";
+				ec = new Elecman(870, 360, 100, 100);
+				BossMap.put("Elecman", ec);
+				bg = new Background("/Background/Stage6.png");
+				StageWidth = 1000;
+				StageHeight = 500;
+			}
 			// frame.add(load);
 			// load.setVisible(true);
 			running = true;
@@ -529,9 +616,8 @@ public class NewView {
 			timer.setInitialDelay(0);
 
 			mega = new Mega(0, 0, 30, 30);
-			bass = new Bass(800, 360, 70, 100);
 			border = new Background("/Background/Border1.png");
-			bg = new Background("/Background/cave.jpg");
+
 			this.addAction("LEFT", 0, 0);
 			this.addAction("RIGHT", 0, 0);
 			this.addAction("UP", 0, 0);
@@ -543,7 +629,7 @@ public class NewView {
 			this.addAction("ESCAPE", 0, 0);
 
 			frame.setSize(600, 600);
-			frame.setBounds(100, 100, 1000, 500);
+			frame.setBounds(100, 100, StageWidth, StageHeight);
 			frame.setLocationRelativeTo(null);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -570,7 +656,6 @@ public class NewView {
 				g2d.drawString("Charge: " + chargeString, 100, 130);
 
 				g2d.drawImage(mega.healthbar, 10, 150, 25, 130, null);
-				g2d.drawImage(bass.healthbar, 925, 0, 30, 480, null);
 				for (int healthstack = 0; healthstack < mega.health; healthstack++) {
 
 					int ypos = 240 - (healthstack * 6);
@@ -578,265 +663,33 @@ public class NewView {
 					g2d.drawImage(mega.healthtick, xpos, ypos, 15, 7, null);
 
 				}
-				for (int healthstack = 0; healthstack < bass.health; healthstack++) {
-
-					int ypos = 360 - (healthstack * 4);
-					int xpos = 932;
-					g2d.drawImage(bass.healthtick, xpos, ypos, 13, 4, null);
-
-				}
-
-				g2d.drawImage(bass.effects, (int) bass.x - 13, (int) bass.y - 25, 120, 120, null);
-				g2d.drawImage(bass.current, (int) bass.x, (int) bass.y, 100, 100, null);
-				if (!mega.invincible) {
-					g2d.drawImage(mega.current, (int) mega.deltaX, (int) mega.deltaY, 50, 50, null);
-				} else {
-					g2d.setComposite(AlphaComposite.SrcOver.derive(0.5f));
-					g2d.drawImage(mega.current, (int) mega.deltaX, (int) mega.deltaY, 50, 50, null);
-					g2d.setComposite(AlphaComposite.SrcOver.derive(1f));
-
-				}
-				g2d.drawImage(mega.effects, (int) mega.x, (int) mega.y, 50, 50, null);
 
 				try {
 					//
 					//
 					//
 					// Megaman Projectile Collision Check
-					if (ProjectileThread.Activebullets != null) {
-						Rectangle BassHitBox = bass.getBounds();
-						Rectangle MegaHitBox = mega.getBounds();
-
-						itr = ProjectileThread.Activebullets.iterator();
-						while (itr.hasNext()) {
-							Projectile projectile = (Projectile) itr.next();
-							Rectangle ShotHitBox = projectile.getBounds();
-							g2d.drawImage(projectile.image, (int) projectile.x + 30, (int) projectile.y + 10,
-									projectile.xScale, projectile.yScale, null);
-
-							if (ShotHitBox.intersects(BassHitBox)) {
-								if (bass.throwframe >= 4 && bass.throwframe <= 11) {
-									playSound("/music/3- Shield.wav");
-									projectile.speed = 25;
-									projectile.reflected = true;
-
-									if (projectile.direction == State.LEFT) {
-										projectile.direction = State.RIGHT;
-										if (projectile.id == "Semichargeshot")
-											projectile.image = ImageIO
-													.read(NewView.class.getResource("/Effects/semichargeshot.png"));
-										else if (projectile.id == "Chargeshot")
-											projectile.image = ImageIO
-													.read(NewView.class.getResource("/Effects/chargeshot.png"));
-										else
-											projectile.image = ImageIO
-													.read(NewView.class.getResource("/Effects/shot.png"));
-									} else {
-										projectile.direction = State.LEFT;
-										if (projectile.id == "Semichargeshot")
-											projectile.image = ImageIO.read(
-													NewView.class.getResource("/Effects/semichargeshotFLIPPED.png"));
-
-										else if (projectile.id == "Chargeshot")
-											projectile.image = ImageIO
-													.read(NewView.class.getResource("/Effects/chargeshotFLIPPED.png"));
-										else
-											projectile.image = ImageIO
-													.read(NewView.class.getResource("/Effects/shot.png"));
-									}
-
-								} else if (bass.barrierActive) {
-									if (bass.barrierhealth - projectile.damage < 0) {
-										bass.barrierhealth = 0;
-										bass.barrierActive = false;
-										bass.effects = null;
-										itr.remove();
-
-									} else {
-										bass.barrierhealth -= projectile.damage;
-										itr.remove();
-									}
-
-								}
-
-								else {
-									bass.health -= projectile.damage;
-									itr.remove();
-
-								}
-							}
-
-							if (ShotHitBox.intersects(MegaHitBox) && projectile.reflected == true) {
-								mega.health -= projectile.damage;
-								itr.remove();
-							}
-
-						}
-					}
-					//
-					//
-					//
-					// Bass Projectile Collision Check
-					if (bass.Activebullets != null) {
-						itr = bass.Activebullets.iterator();
-						while (itr.hasNext()) {
-
-							BassProjectile projectile = (BassProjectile) itr.next();
-
-							// WHEEL INTERACTIONS
-							//
-							//
-							if (projectile.id == "Wheel") {
-
-								if (projectile.direction == State.RIGHT)
-									projectile.x += projectile.speed;
-								else if (projectile.direction == State.LEFT)
-									projectile.x -= projectile.speed;
-								else if (projectile.direction == State.UP)
-									projectile.y -= projectile.speed;
-								else if (projectile.direction == State.DOWN)
-									projectile.y += projectile.speed;
-
-								State direction = projectile.direction;
-								switch (direction) {
-								case LEFT:
-									if (projectile.x < 1 && projectile.y > 395)
-										projectile.direction = State.UP;
-									else if (projectile.x < 1 && projectile.y < 1)
-										projectile.direction = State.DOWN;
-									break;
-
-								case RIGHT:
-									if (projectile.x > 920 && projectile.y < 1) {
-
-										projectile.direction = State.DOWN;
-									} else if (projectile.x > 920 && projectile.y > 395)
-										projectile.direction = State.UP;
-
-									break;
-
-								case DOWN:
-									if (projectile.x > 920 && projectile.y > 395) {
-										projectile.direction = State.LEFT;
-
-									}
-
-									else if (projectile.x < 1 && projectile.y > 395)
-										projectile.direction = State.RIGHT;
-									break;
-								case UP:
-									if (projectile.y < 1 && projectile.x < 1)
-										projectile.direction = State.RIGHT;
-
-									else if (projectile.x > 920 && projectile.y < 1)
-										projectile.direction = State.LEFT;
-
-									break;
-
-								}
-							}
-						}
-
-						if (bass.Activebullets != null) {
-							Rectangle MegaHitBox = mega.getBounds();
-
-							itr = bass.Activebullets.iterator();
-							while (itr.hasNext()) {
-								BassProjectile projectile = (BassProjectile) itr.next();
-								Rectangle ShotHitBox = projectile.getBounds();
-
-								g2d.drawImage(projectile.wheels[4], (int) projectile.x, (int) projectile.y,
-										projectile.xScale, projectile.yScale, null);
-
-								if (ShotHitBox.intersects(MegaHitBox) && mega.invincible == false) {
-									mega.health -= projectile.damage;
-
-									itr.remove();
-									mega.invincible = true;
-									mega.Invincible_Frame_Start_Time = System.nanoTime();
-
-								}
-								if (!bass.isLive) {
-									itr.remove();
-								}
-
-							}
-
-						}
-
-					}
-					//
-					//
-					// Pillar Collision Check
-					if (bass.BassPillarsThread.Activebullets != null) {
-						Rectangle MegaHitBox = mega.getBounds();
-
-						itr = bass.BassPillarsThread.Activebullets.iterator();
-						while (itr.hasNext()) {
-							BassProjectile projectile = (BassProjectile) itr.next();
-							Rectangle ShotHitBox = projectile.getBounds();
-
-							g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
-									projectile.yScale, null);
-
-							if (ShotHitBox.intersects(MegaHitBox) && projectile.pillarframe > 15
-									&& projectile.pillarframe < 27) {
-								mega.health -= projectile.damage;
-
-							}
-							if (!bass.isLive) {
-								itr.remove();
-							}
-
-						}
-
-					}
-					// Bass Orb
-					if (bass.BassOrbThread.Activebullets != null) {
-						Rectangle MegaHitBox = mega.getBounds();
-
-						itr = bass.BassOrbThread.Activebullets.iterator();
-						while (itr.hasNext()) {
-							BassProjectile projectile = (BassProjectile) itr.next();
-							Rectangle ShotHitBox = projectile.getBounds();
-
-							g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
-									projectile.yScale, null);
-
-							if (ShotHitBox.intersects(MegaHitBox) && mega.invincible == false) {
-								mega.health -= projectile.damage;
-								mega.invincible = true;
-								mega.Invincible_Frame_Start_Time = System.nanoTime();
-
-							}
-							if (!bass.isLive) {
-								itr.remove();
-							}
-
-						}
-
+					if (mega.isLive) {
+						mega.paint(g, BossMap, BossKey);
 					}
 
-					//
-					//
-					// Explosion Animation
-					if (bass.ExplodeThread.Activebullets != null) {
+					ec.paint(g, mega);
 
-						itr = bass.ExplodeThread.Activebullets.iterator();
-						while (itr.hasNext()) {
-							BassProjectile projectile = (BassProjectile) itr.next();
+					if (!mega.invincible) {
+						g2d.drawImage(mega.current, (int) mega.deltaX, (int) mega.deltaY, 50, 50, null);
+					} else {
+						g2d.setComposite(AlphaComposite.SrcOver.derive(0.5f));
+						g2d.drawImage(mega.current, (int) mega.deltaX, (int) mega.deltaY, 50, 50, null);
+						g2d.setComposite(AlphaComposite.SrcOver.derive(1f));
 
-							g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
-									projectile.yScale, null);
-
-						}
 					}
-
+					g2d.drawImage(mega.effects, (int) mega.x, (int) mega.y, 50, 50, null);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 
 			}
+
 			g2d.dispose();
 
 		}
@@ -936,24 +789,17 @@ public class NewView {
 						break;
 					}
 
-					else if (mega.CHARGEABLE == false && !mega.shoot) {
-						mega.shootframe = 0;
-						mega.shoot = true;
-						mega.CHARGEABLE = true;
-
-						// Projectile Generation
-						Projectile projectile = new Projectile();
-						projectile.time = System.nanoTime();
-						projectile.x = mega.x;
-						projectile.y = mega.y;
-						if (mega.direction == State.LEFT)
-							projectile.direction = State.LEFT;
-						else if (mega.direction == State.RIGHT)
-							projectile.direction = State.RIGHT;
-						playSound("/music/0- Buster.wav");
-						ProjectileThread.Activebullets.add(projectile);
-						break;
-					}
+					/*
+					 * else if (mega.CHARGEABLE == false && !mega.shoot) { mega.shootframe = 0;
+					 * mega.shoot = true; mega.CHARGEABLE = true;
+					 * 
+					 * // Projectile Generation Projectile projectile = new Projectile();
+					 * projectile.time = System.nanoTime(); projectile.x = mega.x; projectile.y =
+					 * mega.y; if (mega.direction == State.LEFT) projectile.direction = State.LEFT;
+					 * else if (mega.direction == State.RIGHT) projectile.direction = State.RIGHT;
+					 * mega.playSound("/music/0- Buster.wav");
+					 * mega.ProjectileThread.Activebullets.add(projectile); break; }
+					 */
 
 				case "Q":
 					break;
@@ -1059,10 +905,10 @@ public class NewView {
 					double currentTime = System.nanoTime();
 					double time = (currentTime - mega.chargeTimer) / 1000000000;
 
-					if (time < 0.75 && time > 0.4) {
+					if (time < 1.2 && time > 0.8) {
 						projectile.SemiChargeShot();
 						projectile.y = mega.y;
-					} else if (time > 0.75) {
+					} else if (time > 1.2) {
 
 						projectile.FullChargeShot();
 
@@ -1070,16 +916,17 @@ public class NewView {
 					if (mega.direction == State.LEFT) {
 						projectile.direction = State.LEFT;
 
-						if (time < 0.75 && time > 0.3)
+						if (time < 1.2 && time > 0.8)
 							projectile.SemiChargeShotFlip();
-						else if (time > 0.75) {
+						else if (time > 1.2) {
 
 							projectile.FullChargeShotFlip();
 						}
-					} else if (mega.direction == State.RIGHT)
+					} else if (mega.direction == State.RIGHT) {
 						projectile.direction = State.RIGHT;
-					playSound("/music/0- Buster.wav");
-					ProjectileThread.Activebullets.add(projectile);
+					}
+					mega.playSound("/music/0- Buster.wav");
+					mega.ProjectileThread.Activebullets.add(projectile);
 
 				}
 
@@ -1095,8 +942,8 @@ public class NewView {
 						projectile.direction = State.LEFT;
 					else if (mega.direction == State.RIGHT)
 						projectile.direction = State.RIGHT;
-					playSound("/music/0- Buster.wav");
-					ProjectileThread.Activebullets.add(projectile);
+					mega.playSound("/music/0- Buster.wav");
+					mega.ProjectileThread.Activebullets.add(projectile);
 
 				}
 				mega.effects = null;
@@ -1147,9 +994,16 @@ public class NewView {
 		public void run() {
 
 			long start;
+			long lastTime = System.nanoTime();
+			long now;
+			double delta = 0;
 			long fps = 30;
 			long targetTime = 1000 / fps;
 			long elapsed;
+			double ns = 1000000000 / fps;
+			long Frametimer = System.currentTimeMillis();
+			int frames = 0;
+
 			long wait;
 
 			while (running) {
@@ -1159,7 +1013,8 @@ public class NewView {
 					running = false;
 					game.setVisible(false);
 					music.stop();
-
+					Bass = false;
+					ElecMan = false;
 					titlePanel = new TitlePanel();
 					titleThread = new Thread(titlePanel);
 					titleThread.start();
@@ -1223,25 +1078,47 @@ public class NewView {
 							chargeString = "false";
 
 						// Update Player
-						ProjectileThread.update();
+						mega.ProjectileThread.update();
 						// if (mega.isLive) {
-						mega.update();
 
-						if (mega.minChargeReached && !mega.playedOnce) {
-							playSound(mega.playSound());
-							mega.playedOnce = true;
-						}
-						// }
+						now = System.nanoTime();
+						delta += (now - lastTime) / ns;
+						lastTime = now;
+						while (delta >= 1) {
 
-						// Update Enemy
-						if (!bass.LockedOn) {
-							bass.trackPlayer(mega);
+							mega.update();
+
+							if (mega.chargeCount == 13 && !mega.playedOnce) {
+								mega.playSound("/music/5- Charge Complete.wav");
+								mega.playedOnce = true;
+							}
+							// }
+
+							// Update Enemy
+							if (Bass) {
+								if (!ec.LockedOn) {
+									ec.trackPlayer(mega);
+								}
+								ec.update();
+
+							}
+
+							if (ElecMan) {
+								ec.update();
+							}
+
+							delta--;
 						}
-						bass.update();
 
 						this.repaint();
-
+						frames++;
 					}
+				}
+
+				if (System.currentTimeMillis() - Frametimer > 1000) {
+					Frametimer += 1000;
+					System.out.println("FPS " + frames);
+					frames = 0;
 				}
 			}
 

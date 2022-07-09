@@ -116,21 +116,6 @@ public class Projectile {
 		return active;
 	}
 
-	public void BasicShot() {
-		try {
-
-			image = ImageIO.read(NewView.class.getResource("/Effects/shot.png"));
-
-		} catch (IOException e) {
-			e.printStackTrace();
-
-		}
-		speed = 15;
-		int width = image.getWidth(null);
-		int height = image.getWidth(null);
-
-	}
-
 	public Rectangle getBounds() {
 		return new Rectangle((int) x, (int) y, xScale, yScale);
 	}

@@ -1,6 +1,8 @@
+import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
-public class EnemyCharacter {
+public abstract class EnemyCharacter {
 
 	float x;
 	float y;
@@ -15,6 +17,12 @@ public class EnemyCharacter {
 	float PLAYER_LOCATION_X;
 	float PLAYER_LOCATION_Y;
 	float Destination;
+	int barrierhealth;
+	int throwframe;
+	boolean barrierActive;
+	boolean LockedOn = false;
+	BufferedImage effects;
+	int health2;
 
 	public EnemyCharacter(int x, int y, int width, int height) {
 		this.x = x;
@@ -84,4 +92,6 @@ public class EnemyCharacter {
 
 		return distance;
 	}
+
+	abstract void paint(Graphics g, Mega mega);
 }

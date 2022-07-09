@@ -12,11 +12,15 @@ public class BassOrbThread {
 			BassProjectile projectile = iterator.next();
 			projectile.current = projectile.Orb[projectile.orbframe];
 
-			if (projectile.orbframe != 7) {
+			float currentTime = System.nanoTime();
+			float deltaTime = (currentTime - projectile.StartTime) / 1000000000;
+
+			if (deltaTime > .05) {
 				projectile.orbframe++;
 
-			} else {
-				projectile.pillarframe = 0;
+			}
+			if (projectile.orbframe > 7) {
+				projectile.orbframe = 0;
 				iterator.remove();
 
 			}

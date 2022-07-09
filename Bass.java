@@ -1,16 +1,23 @@
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 public class Bass extends EnemyCharacter {
-
+	private BufferedImage image;
 	BufferedImage current;
-	BufferedImage effects;
 	BufferedImage healthbar;
 	BufferedImage healthtick;
+	BufferedImage healthtick2;
 	BufferedImage idle;
 	BufferedImage idleBack;
 	BufferedImage defeated;
@@ -28,18 +35,18 @@ public class Bass extends EnemyCharacter {
 	boolean shoot = false;
 	boolean air = false;
 	boolean charge = false;
-	boolean barrierActive = true;
+
+	Iterator itr;
 
 	State state;
 	State direction;
 	State action;
-	int barrierhealth = 100;
 	int TeleportCount = 0;
 	int WheelCount = 0;
 	int walkframe = 0;
-	int smashanimation = -1;
-	int pillarsummonframe = -1;
-	int throwframe = 0;
+	int smashanimation = 0;
+	int pillarsummonframe = 0;
+
 	int wheelframe = 0;
 	int barrierframe = 0;
 	int tpStartFrame = 0;
@@ -47,7 +54,10 @@ public class Bass extends EnemyCharacter {
 	int defeatCounter = 0;
 	long start;
 	boolean In_Animation_Flag = false;
-	boolean LockedOn = false;
+	boolean PlayedOnce = false;
+	float currentTime = 0;
+	float deltaTime = 0;
+	float prevTime = 0;
 
 	LinkedList<BassProjectile> Activebullets;
 
@@ -58,6 +68,7 @@ public class Bass extends EnemyCharacter {
 
 	BassPillarsThread BassPillarsThread;
 	BassOrbThread BassOrbThread;
+	BassWheelsThread BassWheelsThread;
 	Explode ExplodeThread;
 
 	float originalheight;
@@ -67,8 +78,11 @@ public class Bass extends EnemyCharacter {
 	public Bass(int x, int y, int width, int height) {
 
 		super(x, y, width, height);
-
-		health = 80;
+		barrierhealth = 100;
+		health = 40;
+		health2 = 40;
+		barrierActive = true;
+		throwframe = 0;
 		Activebullets = new LinkedList<>();
 		PillarProjectileList = new BassProjectile[5];
 		ExplosiveList = new BassProjectile[10];
@@ -90,21 +104,22 @@ public class Bass extends EnemyCharacter {
 		BassPillarsThread = new BassPillarsThread();
 		BassOrbThread = new BassOrbThread();
 		ExplodeThread = new Explode();
+		BassWheelsThread = new BassWheelsThread();
 		start = System.currentTimeMillis();
 		state = State.STANDING;
 		direction = State.FACING_LEFT;
 		action = null;
 		deltaX = 0;
 		deltaY = 410;
-		ThrowAnimation = new BufferedImage[12];
-		ThrowBackAnimation = new BufferedImage[12];
+		ThrowAnimation = new BufferedImage[4];
+		ThrowBackAnimation = new BufferedImage[4];
 		Spawn = new BufferedImage[18];
 		SpawnLeft = new BufferedImage[18];
 		BarrierAnimation = new BufferedImage[3];
 		TP_LEFT_Animation = new BufferedImage[9];
 		TP_RIGHT_Animation = new BufferedImage[9];
-		PillarSummonAnimation = new BufferedImage[22];
-		SmashAnimation = new BufferedImage[25];
+		PillarSummonAnimation = new BufferedImage[5];
+		SmashAnimation = new BufferedImage[4];
 
 		// TODO Auto-generated constructor stub
 		try {
@@ -112,6 +127,7 @@ public class Bass extends EnemyCharacter {
 			defeated = ImageIO.read(NewView.class.getResource("/BassSprite/BassDefeated.png"));
 			healthbar = ImageIO.read(NewView.class.getResource("/Effects/h.png"));
 			healthtick = ImageIO.read(NewView.class.getResource("/Effects/bar.png"));
+			healthtick2 = ImageIO.read(NewView.class.getResource("/Effects/bar2.png"));
 			Spawn[0] = ImageIO.read(NewView.class.getResource("/BassSprite/idle0.png"));
 			Spawn[1] = ImageIO.read(NewView.class.getResource("/BassSprite/idle0.png"));
 			Spawn[2] = ImageIO.read(NewView.class.getResource("/BassSprite/idle0.png"));
@@ -156,55 +172,19 @@ public class Bass extends EnemyCharacter {
 
 			ThrowAnimation[0] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow1.png"));
 			ThrowAnimation[1] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow1.png"));
-			ThrowAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow1.png"));
-			ThrowAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow1.png"));
-			ThrowAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow2.png"));
-			ThrowAnimation[5] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow2.png"));
-			ThrowAnimation[6] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow2.png"));
-			ThrowAnimation[7] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow2.png"));
-			ThrowAnimation[8] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow3.png"));
-			ThrowAnimation[9] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow3.png"));
-			ThrowAnimation[10] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow3.png"));
-			ThrowAnimation[11] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow3.png"));
+			ThrowAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow2.png"));
+			ThrowAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrow3.png"));
 
 			ThrowBackAnimation[0] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack1.png"));
 			ThrowBackAnimation[1] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack1.png"));
-			ThrowBackAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack1.png"));
-			ThrowBackAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack1.png"));
-			ThrowBackAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack2.png"));
-			ThrowBackAnimation[5] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack2.png"));
-			ThrowBackAnimation[6] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack2.png"));
-			ThrowBackAnimation[7] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack2.png"));
-			ThrowBackAnimation[8] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack3.png"));
-			ThrowBackAnimation[9] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack3.png"));
-			ThrowBackAnimation[10] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack3.png"));
-			ThrowBackAnimation[11] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack3.png"));
+			ThrowBackAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack2.png"));
+			ThrowBackAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassThrowBack3.png"));
 
 			PillarSummonAnimation[0] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar1.png"));
 			PillarSummonAnimation[1] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar1.png"));
-			PillarSummonAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar1.png"));
-			PillarSummonAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar1.png"));
-			PillarSummonAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar1.png"));
-			PillarSummonAnimation[5] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar1.png"));
-			PillarSummonAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
-			PillarSummonAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
-			PillarSummonAnimation[5] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
-			PillarSummonAnimation[6] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
-			PillarSummonAnimation[7] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
-			PillarSummonAnimation[8] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
-			PillarSummonAnimation[9] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
-			PillarSummonAnimation[10] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
-			PillarSummonAnimation[11] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
-			PillarSummonAnimation[12] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
-			PillarSummonAnimation[13] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
-			PillarSummonAnimation[14] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
-			PillarSummonAnimation[15] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
-			PillarSummonAnimation[16] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
-			PillarSummonAnimation[17] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
-			PillarSummonAnimation[18] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
-			PillarSummonAnimation[19] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
-			PillarSummonAnimation[20] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
-			PillarSummonAnimation[21] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
+			PillarSummonAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar2.png"));
+			PillarSummonAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar3.png"));
+			PillarSummonAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassPillar4.png"));
 
 			TP_LEFT_Animation[0] = ImageIO.read(NewView.class.getResource("/BassSprite/BassTP1.png"));
 			TP_LEFT_Animation[1] = ImageIO.read(NewView.class.getResource("/BassSprite/BassTP1.png"));
@@ -228,29 +208,8 @@ public class Bass extends EnemyCharacter {
 
 			SmashAnimation[0] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
 			SmashAnimation[1] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[4] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[5] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[6] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[7] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[8] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[9] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[10] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[11] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[12] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[13] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[14] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[15] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[16] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash0.png"));
-			SmashAnimation[17] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
-			SmashAnimation[18] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
-			SmashAnimation[19] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
-			SmashAnimation[20] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
-			SmashAnimation[21] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
-			SmashAnimation[22] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
-			SmashAnimation[23] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
-			SmashAnimation[24] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
+			SmashAnimation[2] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash1.png"));
+			SmashAnimation[3] = ImageIO.read(NewView.class.getResource("/BassSprite/BassSmash2.png"));
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -325,7 +284,7 @@ public class Bass extends EnemyCharacter {
 						this.state = State.WHEELS_LEFT;
 				}
 
-				else if (int_random == 2 && !barrierActive) {
+				else if (int_random == 2 && !barrierActive && WheelCount == 2) {
 					In_Animation_Flag = true;
 					TeleportCount = 0;
 					x = 800;
@@ -396,6 +355,8 @@ public class Bass extends EnemyCharacter {
 				BassPillarsThread.update();
 			if (BassOrbThread.Activebullets.size() > 0)
 				BassOrbThread.update();
+			if (BassWheelsThread.Activebullets.size() > 0)
+				BassWheelsThread.update();
 
 		}
 
@@ -408,34 +369,45 @@ public class Bass extends EnemyCharacter {
 
 	private void Smash() {
 		// TODO Auto-generated method stub
-		smashanimation++;
-		current = SmashAnimation[smashanimation];
 
-		if (smashanimation == 5) {
+		current = SmashAnimation[smashanimation];
+		currentTime = System.nanoTime();
+		deltaTime = (currentTime - prevTime) / 1000000000;
+		if (deltaTime > 0.4f) {
+			smashanimation++;
+			prevTime = currentTime;
+		}
+
+		if (smashanimation == 1) {
 			if (!LockedOn) {
 				LockedOn = true;
 			}
 
 		}
 
-		else if (smashanimation == 15) {
-
-			this.x = this.PLAYER_LOCATION_X - 30;
-			this.y = this.PLAYER_LOCATION_Y - 35;
+		if (smashanimation == 2) {
+			this.x = this.PLAYER_LOCATION_X - 140;
+			this.y = this.PLAYER_LOCATION_Y - 150;
 		}
 
-		else if (smashanimation == 24) {
+		else if (smashanimation == 3 && PlayedOnce == false) {
+			PlayedOnce = true;
 			BassProjectile projectile = new BassProjectile();
 			projectile.OrbAttack();
 			projectile.x = x;
 			projectile.y = y;
 			BassOrbThread.Activebullets.add(projectile);
-			// In_Animation_Flag = false;
+			playSound("/music/BassOrb.wav");
+			// In_Animation_Flag = false
+
+		}
+
+		if (smashanimation > 3) {
 			this.state = State.TP_TO_RIGHT_SIDE;
 			smashanimation = 0;
 			start = elapsed;
 			LockedOn = false;
-
+			PlayedOnce = false;
 		}
 
 	}
@@ -465,9 +437,15 @@ public class Bass extends EnemyCharacter {
 
 		// this.direction = State.LEFT;
 		current = ThrowAnimation[throwframe];
-		throwframe++;
 
-		if (throwframe > 11) {
+		currentTime = System.nanoTime();
+		deltaTime = (currentTime - prevTime) / 1000000000;
+		if (deltaTime > 0.2f) {
+			throwframe++;
+			prevTime = currentTime;
+		}
+
+		if (throwframe > 3) {
 
 			this.state = State.STANDING;
 			for (int i = 0; i < 1; i++) {
@@ -476,7 +454,7 @@ public class Bass extends EnemyCharacter {
 				projectile.WheelAttack();
 				projectile.x = 900;
 				projectile.y = 400;
-				Activebullets.add(projectile);
+				BassWheelsThread.Activebullets.add(projectile);
 
 			}
 			In_Animation_Flag = false;
@@ -489,9 +467,14 @@ public class Bass extends EnemyCharacter {
 	private void wheelsFlippedAnimation() { // TODO Auto-generated method stub
 
 		current = ThrowBackAnimation[throwframe];
-		throwframe++;
+		currentTime = System.nanoTime();
+		deltaTime = (currentTime - prevTime) / 1000000000;
+		if (deltaTime > 0.225f) {
+			throwframe++;
+			prevTime = currentTime;
+		}
 
-		if (throwframe > 11) {
+		if (throwframe > 3) {
 
 			this.state = State.STANDING;
 			for (int i = 0; i < 1; i++) {
@@ -500,7 +483,7 @@ public class Bass extends EnemyCharacter {
 				projectile.FlippedWheelAttack();
 				projectile.x = 50;
 				projectile.y = 400;
-				Activebullets.add(projectile);
+				BassWheelsThread.Activebullets.add(projectile);
 
 			}
 			In_Animation_Flag = false;
@@ -569,10 +552,15 @@ public class Bass extends EnemyCharacter {
 
 	private void pillarAnimation() {
 		// TODO Auto-generated method stub
-		pillarsummonframe++;
-		current = PillarSummonAnimation[pillarsummonframe];
 
-		if (pillarsummonframe == 21) {
+		current = PillarSummonAnimation[pillarsummonframe];
+		currentTime = System.nanoTime();
+		deltaTime = (currentTime - prevTime) / 1000000000;
+		if (deltaTime > 0.3f) {
+			pillarsummonframe++;
+			prevTime = currentTime;
+		}
+		if (pillarsummonframe == 5) {
 			for (int i = 0; i < 5; i++) {
 				Random rand = new Random();
 				int int_random = rand.nextInt(200 + 500);
@@ -587,6 +575,147 @@ public class Bass extends EnemyCharacter {
 			start = elapsed;
 
 		}
+	}
+
+	public void playSound(String soundName) {
+		try {
+			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(NewView.class.getResource(soundName));
+			Clip clip = AudioSystem.getClip();
+			clip.open(audioInputStream);
+			clip.start();
+		} catch (Exception ex) {
+			System.out.println("Error with playing sound.");
+			ex.printStackTrace();
+		}
+	}
+
+	public void paint(Graphics g, Mega mega) {
+		Graphics2D g2d = (Graphics2D) g.create();
+		// g.setColor(java.awt.Color.black);
+		// image = new BufferedImage(500, 500, BufferedImage.TYPE_INT_RGB);
+
+		// BASS
+		g2d.drawImage(healthbar, 925, 100, 40, 240, null);
+
+		for (int healthstack = 0; healthstack < health; healthstack++) {
+
+			int ypos = 275 - (healthstack * 4);
+			int xpos = 932;
+			g2d.drawImage(healthtick, xpos, ypos, 20, 4, null);
+
+		}
+
+		for (int healthstack = 0; healthstack < health2; healthstack++) {
+
+			int ypos = 275 - (healthstack * 4);
+			int xpos = 932;
+			g2d.drawImage(healthtick2, xpos, ypos, 20, 4, null);
+
+		}
+
+		g2d.drawImage(effects, (int) x - 13, (int) y - 25, 120, 120, null);
+		g2d.drawImage(current, (int) x, (int) y, 100, 100, null);
+
+		if (BassWheelsThread.Activebullets != null) {
+
+			// WHEEL INTERACTIONS
+			//
+			//
+
+			if (BassWheelsThread.Activebullets != null) {
+				Rectangle MegaHitBox = mega.getBounds();
+
+				itr = BassWheelsThread.Activebullets.iterator();
+				while (itr.hasNext()) {
+					BassProjectile projectile = (BassProjectile) itr.next();
+					Rectangle ShotHitBox = projectile.getBounds();
+
+					g2d.drawImage(projectile.wheels[4], (int) projectile.x, (int) projectile.y, projectile.xScale,
+							projectile.yScale, null);
+
+					if (ShotHitBox.intersects(MegaHitBox) && mega.invincible == false) {
+						mega.health -= projectile.damage;
+
+						itr.remove();
+						mega.invincible = true;
+						mega.Invincible_Frame_Start_Time = System.nanoTime();
+
+					}
+					if (!isLive) {
+						itr.remove();
+					}
+
+				}
+
+			}
+
+		}
+		//
+		//
+		// Pillar Collision Check
+		if (BassPillarsThread.Activebullets != null) {
+			Rectangle MegaHitBox = mega.getBounds();
+
+			itr = BassPillarsThread.Activebullets.iterator();
+			while (itr.hasNext()) {
+				BassProjectile projectile = (BassProjectile) itr.next();
+				Rectangle ShotHitBox = projectile.getBounds();
+
+				g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
+						projectile.yScale, null);
+
+				if (ShotHitBox.intersects(MegaHitBox) && projectile.pillarframe > 15 && projectile.pillarframe < 27) {
+					mega.health -= projectile.damage;
+
+				}
+				if (!isLive) {
+					itr.remove();
+				}
+
+			}
+
+		}
+		// Bass Orb
+		if (BassOrbThread.Activebullets != null) {
+			Rectangle MegaHitBox = mega.getBounds();
+
+			itr = BassOrbThread.Activebullets.iterator();
+			while (itr.hasNext()) {
+				BassProjectile projectile = (BassProjectile) itr.next();
+				Rectangle ShotHitBox = projectile.getBounds();
+
+				g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
+						projectile.yScale, null);
+
+				if (ShotHitBox.intersects(MegaHitBox) && mega.invincible == false) {
+					mega.health -= projectile.damage;
+					mega.invincible = true;
+					mega.Invincible_Frame_Start_Time = System.nanoTime();
+
+				}
+				if (!isLive) {
+					itr.remove();
+				}
+
+			}
+
+		}
+
+		//
+		//
+		// Explosion Animation
+		if (ExplodeThread.Activebullets != null) {
+
+			itr = ExplodeThread.Activebullets.iterator();
+			while (itr.hasNext()) {
+				BassProjectile projectile = (BassProjectile) itr.next();
+
+				g2d.drawImage(projectile.current, (int) projectile.x, (int) projectile.y, projectile.xScale,
+						projectile.yScale, null);
+
+			}
+		}
+
 	}
 
 }
