@@ -1,4 +1,5 @@
 # Megaman
+Requires JRE 1.8
 Downloadable app in the release section
 
 This is a game I created as a starting project for my self learning game development journey.
