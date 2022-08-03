@@ -7,6 +7,6 @@ All sprites are borrowed from Capcom's Official Megaman Series, not drawn by me.
 This is boss rush game featuring Megaman X in a 2d platformer style.
 
 <h3>Controls </h3>
-- X to charge/shoot
-- Z to jump
-- Space to dash
+<p> - X to charge/shoot</p>
+<p> - Z to jump </p>
+<p>- Space to dash</p>
