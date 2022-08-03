@@ -1,4 +1,4 @@
-# Megaman
+<h1>Megaman</h1>
 Requires JRE 1.8
 Downloadable app in the release section
 
@@ -6,7 +6,7 @@ This is a game I created as a starting project for my self learning game develop
 All sprites are borrowed from Capcom's Official Megaman Series, not drawn by me.
 This is boss rush game featuring Megaman X in a 2d platformer style.
 
-Controls 
+<h3>Controls </h3>
 - X to charge/shoot
 - Z to jump
 - Space to dash
